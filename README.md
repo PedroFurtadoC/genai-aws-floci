@@ -92,7 +92,7 @@ Encontrei três diferenças durante os testes e deixei registradas:
 
 ## Uso de IA
 
-Usei o Claude Code como assistente nas Etapas 2 e 3, com dois servidores MCP da AWS configurados em `.mcp.json` (documentação oficial e AWS Knowledge). Nenhum servidor com acesso a conta AWS foi usado. As respostas completas, sem edição, estão em `diario/`. O resto do código, os testes no Floci e as correções são meus.
+Usei o Claude Code em todo o roteiro: nas consultas e gerações das Etapas 2 e 3, com os dois servidores MCP de `.mcp.json` (documentação oficial e AWS Knowledge), e como assistente no código, nos testes e no texto. Nenhum servidor com acesso a conta AWS foi usado. As respostas das Etapas 2 e 3, sem edição, estão em `diario/`.
 
 | # | Prompt | O que a IA entregou | Erro encontrado | O que eu fiz |
 |---|---|---|---|---|
