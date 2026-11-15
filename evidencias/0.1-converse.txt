@@ -1,0 +1,33 @@
+$ aws sts get-caller-identity
+{
+    "UserId": "000000000000",
+    "Account": "000000000000",
+    "Arn": "arn:aws:iam::000000000000:root"
+}
+
+$ aws s3 ls
+2026-11-14 15:13:40 teste-floci
+
+$ aws bedrock-runtime converse --model-id anthropic.claude-3-haiku-20240307-v1:0 --messages '[{"role":"user","content":[{"text":"Em uma frase: o que é IaaS?"}]}]'
+{
+    "output": {
+        "message": {
+            "role": "assistant",
+            "content": [
+                {
+                    "text": "O IaaS (Infrastructure as a Service) é uma forma de serviço de infraestrutura computacional que permite aos usuários acessar e gerenciar recursos de infraestrutura, como servidores, redes e armazenamento, de forma remota e escalável."
+                }
+            ]
+        }
+    },
+    "stopReason": "end_turn",
+    "usage": {
+        "inputTokens": 35,
+        "outputTokens": 56,
+        "totalTokens": 91
+    },
+    "metrics": {
+        "latencyMs": 4965
+    }
+}
+

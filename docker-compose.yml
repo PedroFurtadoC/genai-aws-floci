@@ -1,0 +1,24 @@
+services:
+  floci:
+    image: floci/floci:latest
+    ports: ["4566:4566"]
+    environment:
+      FLOCI_HOSTNAME: floci
+      FLOCI_SERVICES_BEDROCK_RUNTIME_BACKEND: proxy
+      FLOCI_SERVICES_BEDROCK_RUNTIME_PROXY_URL: http://ollama:11434/v1
+      FLOCI_SERVICES_BEDROCK_RUNTIME_PROXY_DEFAULT_MODEL: llama3.2
+      # Etapa 4 (desafio): um modelId para cada modelo local
+      # FLOCI_SERVICES_BEDROCK_RUNTIME_PROXY_MODEL_MAPPING: anthropic.claude-3-haiku-20240307-v1:0=llama3.2,amazon.nova-micro-v1:0=qwen2.5:3b
+      # Etapas 2, 5 e 6: avaliação de políticas IAM (na AWS real é sempre obrigatória)
+      FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock  # necessário para o Lambda
+    depends_on: [ollama]
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes:
+      - ollama:/root/.ollama
+volumes:
+  ollama:

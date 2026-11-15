@@ -1,0 +1,13 @@
+# Opcional: inferência do Ollama na GPU NVIDIA (Docker Desktop com WSL2 ou NVIDIA Container Toolkit).
+# Uso: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+services:
+  ollama:
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m # evita recarregar o modelo na VRAM a cada pausa (a 1ª carga passa de 60 s)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

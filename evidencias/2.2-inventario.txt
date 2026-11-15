@@ -1,0 +1,12 @@
+$ .venv/Scripts/python scripts/inventario.py
+Conta 000000000000 | perfil floci | região us-east-1
+
+Buckets S3:
+  - relatorios
+  - imagens-drone
+  - teste-floci
+Tabelas DynamoDB:
+  - sensores
+Usuários IAM:
+  - tecnico-campo  (arn:aws:iam::000000000000:user/tecnico-campo)
+

@@ -1,0 +1,21 @@
+$ aws iam create-user --user-name agente-campo --query User.Arn --output text
+arn:aws:iam::000000000000:user/agente-campo
+
+$ aws iam put-user-policy --user-name agente-campo --policy-name agente-minimo --policy-document file://iam/politica-agente.json && echo "política agente-minimo anexada"
+política agente-minimo anexada
+
+$ aws iam create-access-key --user-name agente-campo   # chave gravada só no ~/.aws/credentials local
+AccessKeyId AKIA0L6U… (segredo omitido)
+$ AWS_PROFILE=agente-campo aws sts get-caller-identity --query "[Account,Arn]" --output text
+000000000000	arn:aws:iam::000000000000:user/agente-campo
+
+# 1ª execução do agente com AWS_PROFILE=agente-campo (última linha do erro)
+$ python agente/agente.py
+botocore.errorfactory.AccessDeniedException: An error occurred (AccessDeniedException) when calling the PutLogEvents operation: User is not authorized to perform: logs:PutLogEvents
+
+$ docker logs genai-aws-floci-floci-1 2>&1 | grep -m1 "DENY.*PutLogEvents"
+2026-11-14 21:17:01,159 INFO  [io.git.hec.flo.cor.com.IamEnforcementFilter] IAM enforcement DENY: akid=AKIA0L6U… action=logs:PutLogEvents resource=*
+
+$ aws iam put-user-policy --user-name agente-campo --policy-name floci-putlogevents --policy-document file://iam/politica-agente-floci-logs.json && echo "política floci-putlogevents anexada (só no Floci; na AWS o recurso é o ARN do log stream)"
+política floci-putlogevents anexada (só no Floci; na AWS o recurso é o ARN do log stream)
+

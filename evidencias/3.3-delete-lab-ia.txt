@@ -1,0 +1,6 @@
+$ aws cloudformation delete-stack --stack-name lab-ia && aws cloudformation wait stack-delete-complete --stack-name lab-ia && echo "stack lab-ia apagada"
+stack lab-ia apagada
+
+$ aws s3 ls; aws dynamodb list-tables --output text
+2026-11-14 15:16:02 relatorios
+

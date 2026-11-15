@@ -1,0 +1,23 @@
+$ for i in $(seq 1 400); do docker stats --no-stream --format '{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}' | sed "s/^/$(date +%H:%M:%S)\t/"; sleep 1; done > amostras.tsv
+# trecho: só o contêiner do Ollama, durante a triagem dos 4 relatórios da Etapa 4 (CPU, sem GPU)
+hora      CPU      memória
+15:21:11    0.00%  2.034GiB
+15:21:15    0.00%  2.034GiB
+15:21:18   30.22%  2.058GiB
+15:21:22  101.10%  2.802GiB
+15:21:26  100.26%  3.852GiB
+15:21:30  101.78%  4.074GiB
+15:21:34  567.40%  4.455GiB
+15:21:37  626.79%  4.455GiB
+15:21:41  598.15%  4.455GiB
+15:21:45  619.15%  4.455GiB
+15:21:49  620.49%  4.455GiB
+15:21:53  597.81%  4.455GiB
+15:21:57  622.00%  4.455GiB
+15:22:00  603.29%  4.455GiB
+15:22:04  600.83%  4.456GiB
+15:22:08    0.01%  4.456GiB
+15:22:12    0.00%  4.456GiB
+
+# janela ativa 15:21:22 a 15:22:04 (12 amostras): CPU média 480%, pico 627% (100% = 1 núcleo)
+# memória do Ollama: 2.034GiB em repouso, 4.456GiB com o modelo carregado

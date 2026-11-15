@@ -1,0 +1,55 @@
+$ bash scripts/cenario-etapa5.sh
+{
+    "SubscriptionArn": "arn:aws:sns:us-east-1:000000000000:alerta-cpu:76090427-4e90-4987-8cc5-52865307cac0"
+}
+CPU=30%
+CPU=35%
+CPU=45%
+CPU=60%
+CPU=72%
+CPU=85%
+CPU=90%
+CPU=95%
+CPU=95%
+"ALARM"
+{
+    "Messages": [
+        {
+            "MessageId": "5df2ae95-231e-4423-8d54-6851aff3ee66",
+            "ReceiptHandle": "region=us-east-1:account=000000000000:queue=fila-alertas:messageId=5df2ae95-231e-4423-8d54-6851aff3ee66:receipt=9ccdce40-95ef-415d-98e3-5159657bd64d:signature=29aef1fccf82b28cc11f2b717aebc4dd585a99f3e602bef8eeb18bda2ed3ec90",
+            "MD5OfBody": "2e910ad18aee566a64466e9299843548",
+            "Body": "{\"Type\":\"Notification\",\"MessageId\":\"a7b35aa7-d1b3-4e24-ba8e-0a0de0cb3057\",\"TopicArn\":\"arn:aws:sns:us-east-1:000000000000:alerta-cpu\",\"Timestamp\":\"2026-11-14T18:38:00.971099050Z\",\"Subject\":\"ALARM: \\\"cpu-alta-asg-campo\\\"\",\"Message\":\"{\\\"AlarmName\\\":\\\"cpu-alta-asg-campo\\\",\\\"AlarmDescription\\\":null,\\\"AWSAccountId\\\":\\\"000000000000\\\",\\\"AlarmConfigurationUpdatedTimestamp\\\":\\\"2026-11-14T18:29:41.000+0000\\\",\\\"NewStateValue\\\":\\\"ALARM\\\",\\\"NewStateReason\\\":\\\"Threshold Crossed: 3 datapoint(s) breaching the threshold.\\\",\\\"StateChangeTime\\\":\\\"2026-11-14T18:38:00.000+0000\\\",\\\"Region\\\":\\\"US East (N. Virginia)\\\",\\\"AlarmArn\\\":\\\"arn:aws:cloudwatch:us-east-1:000000000000:alarm:cpu-alta-asg-campo\\\",\\\"OldStateValue\\\":\\\"OK\\\",\\\"OKActions\\\":[],\\\"AlarmActions\\\":[\\\"arn:aws:sns:us-east-1:000000000000:alerta-cpu\\\"],\\\"InsufficientDataActions\\\":[],\\\"Trigger\\\":{\\\"MetricName\\\":\\\"CPUUtilization\\\",\\\"Namespace\\\":\\\"AWS/EC2\\\",\\\"StatisticType\\\":\\\"Statistic\\\",\\\"Statistic\\\":\\\"AVERAGE\\\",\\\"Unit\\\":null,\\\"Dimensions\\\":[{\\\"name\\\":\\\"AutoScalingGroupName\\\",\\\"value\\\":\\\"asg-campo\\\"}],\\\"Period\\\":60,\\\"EvaluationPeriods\\\":3,\\\"DatapointsToAlarm\\\":3,\\\"ComparisonOperator\\\":\\\"GreaterThanThreshold\\\",\\\"Threshold\\\":80.0,\\\"TreatMissingData\\\":null,\\\"EvaluateLowSampleCountPercentile\\\":\\\"\\\"}}\",\"SignatureVersion\":\"1\",\"Signature\":\"CS7iONjK23Uf9X7cuG2xKb4v0sURsZ823qq77QIHQC3dojDByvX6esidlZegxS5oST5bY4/8D86UZufr8YHmWq6n/879p6b6N+XSot82V9R8cvXF/iW4ElPfwl0xfX16gpLme+FnTPxL0gYrh11OvUTpc7whv7/NBLWCaqeM4DSQgx76tnjYsixG6P/96bdHqZDdMUdRmPRXoJaa62qFGSfCJRh2WXdjwQzVZNpJTrDmEykRtS8O/0upOn7qM50XvgDzkZzavtaEFZilFHjvGKGMTAz//BdfDfSb2+tPeLYqtytiUe+Xo4gsAJAJZo9eUqtuD3VomXW+60TySpgCqA==\",\"SigningCertURL\":\"http://floci:4566/_aws/sns/SimpleNotificationService-9dad09d4a4f88e283698ab7f6aeff905.pem\",\"UnsubscribeURL\":\"http://floci:4566/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:000000000000:alerta-cpu:76090427-4e90-4987-8cc5-52865307cac0\",\"MessageAttributes\":{}}"
+        }
+    ]
+}
+
+# Reexecução do incidente simulado (os pontos anteriores saíram da janela de 180 min do agente)
+$ for v in 30 35 45 60 72 85 90 95 95; do aws cloudwatch put-metric-data --namespace AWS/EC2 --metric-name CPUUtilization --dimensions AutoScalingGroupName=asg-campo --value "$v" --unit Percent; echo "$(date -u +%H:%M:%S) CPU=$v%"; sleep 60; done
+21:20:58 CPU=30%
+21:22:00 CPU=35%
+21:23:05 CPU=45%
+21:24:10 CPU=60%
+21:25:13 CPU=72%
+21:26:17 CPU=85%
+21:27:23 CPU=90%
+21:28:28 CPU=95%
+21:29:32 CPU=95%
+
+$ aws cloudwatch describe-alarms --alarm-names cpu-alta-asg-campo --query 'MetricAlarms[0].[StateValue,StateUpdatedTimestamp]' --output text
+ALARM	2026-11-14T18:29:09-03:00
+
+# Nova reexecução do incidente, no dia seguinte, antes da execução oficial do agente
+$ for v in 30 35 45 60 72 85 90 95 95; do aws cloudwatch put-metric-data --namespace AWS/EC2 --metric-name CPUUtilization --dimensions AutoScalingGroupName=asg-campo --value "$v" --unit Percent; echo "$(date -u +%H:%M:%S) CPU=$v%"; sleep 60; done
+03:02:20 CPU=30%
+03:03:22 CPU=35%
+03:04:24 CPU=45%
+03:05:26 CPU=60%
+03:06:28 CPU=72%
+03:07:30 CPU=85%
+03:08:32 CPU=90%
+03:09:34 CPU=95%
+03:10:37 CPU=95%
+
+$ aws cloudwatch describe-alarms --alarm-names cpu-alta-asg-campo --query 'MetricAlarms[0].[StateValue,StateUpdatedTimestamp]' --output text
+ALARM	2026-11-15T00:10:07-03:00
+

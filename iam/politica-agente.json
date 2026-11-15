@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Sid": "LeituraSemSuporteAArn", "Effect": "Allow",
+      "Action": ["cloudwatch:GetMetricStatistics", "autoscaling:DescribeAutoScalingGroups",
+                 "autoscaling:DescribeScalingActivities"],
+      "Resource": "*" },
+    { "Sid": "EscalaSoNoAsgCampo", "Effect": "Allow", "Action": "autoscaling:SetDesiredCapacity",
+      "Resource": "arn:aws:autoscaling:us-east-1:000000000000:autoScalingGroup:*:autoScalingGroupName/asg-campo" },
+    { "Sid": "ChamarSoOModelo", "Effect": "Allow", "Action": "bedrock:InvokeModel",
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0" },
+    { "Sid": "Auditoria", "Effect": "Allow",
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+      "Resource": ["arn:aws:logs:us-east-1:000000000000:log-group:/agente/diagnostico",
+                   "arn:aws:logs:us-east-1:000000000000:log-group:/agente/diagnostico:*"] }
+  ]
+}

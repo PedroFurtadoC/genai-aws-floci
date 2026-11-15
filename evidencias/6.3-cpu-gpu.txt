@@ -1,0 +1,24 @@
+# Ollama só na CPU (docker-compose.yml do roteiro)
+$ docker compose up -d --no-deps ollama 2>&1 | tail -1
+ Container genai-aws-floci-ollama-1 Started 
+
+$ .venv/Scripts/python custo/medir_ollama.py relatorios/r3-alta.txt
+carga 8.1 s | entrada 123 tokens | saída 64 tokens | geração 5.2 s | total 16.9 s
+
+$ .venv/Scripts/python custo/medir_ollama.py relatorios/r3-alta.txt
+carga 0.0 s | entrada 123 tokens | saída 65 tokens | geração 5.3 s | total 5.4 s
+
+# Ollama na GPU (override docker-compose.gpu.yml)
+$ docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --no-deps ollama 2>&1 | tail -1
+ Container genai-aws-floci-ollama-1 Started 
+
+$ .venv/Scripts/python custo/medir_ollama.py relatorios/r3-alta.txt
+carga 85.8 s | entrada 123 tokens | saída 67 tokens | geração 1.6 s | total 142.5 s
+
+$ .venv/Scripts/python custo/medir_ollama.py relatorios/r3-alta.txt
+carga 0.0 s | entrada 123 tokens | saída 67 tokens | geração 2.1 s | total 2.1 s
+
+$ docker exec genai-aws-floci-ollama-1 ollama ps
+NAME               ID              SIZE      PROCESSOR         CONTEXT    RUNNER      UNTIL               
+llama3.2:latest    a80c4f17acd5    2.5 GB    6%/94% CPU/GPU    4096       llamacpp    29 minutes from now    
+

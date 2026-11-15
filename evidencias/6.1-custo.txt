@@ -1,0 +1,11 @@
+$ .venv/Scripts/python custo/custo.py
+Medido no Floci: 6 relatórios, latência média local 26.3 s
+Média: 218 tokens de entrada, 33 de saída | 15,000 relatórios/mês
+
+Modelo                US$/relatório  US$/mês IA   +Lambda   Equilíbrio GPU (rel./dia)
+Amazon Nova Micro          0.000012        0.18      0.31                   1,045,840
+Claude Haiku 4.5           0.000383        5.74      5.87                      33,462
+
+Lambda isolada (256 MB, 2 s): US$ 0.13/mês (coberta pelo free tier)
+EC2 g4dn.xlarge 24x7: US$ 383.98/mês
+

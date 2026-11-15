@@ -1,0 +1,36 @@
+$ docker compose exec -T floci printenv FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED
+true
+
+$ aws s3 mb s3://relatorios
+make_bucket: relatorios
+
+$ echo "Inspeção talhão 12: sem pragas" | aws s3 cp - s3://relatorios/inspecao-001.txt
+
+$ bash scripts/menor-privilegio.sh
+{
+    "User": {
+        "Path": "/",
+        "UserName": "leitor-relatorios",
+        "UserId": "AIDAONYPDMV8ZEJZV304",
+        "Arn": "arn:aws:iam::000000000000:user/leitor-relatorios",
+        "CreateDate": "2026-11-14T18:16:07.814000+00:00"
+    }
+}
+== get-object (deve PASSAR)
+{
+    "AcceptRanges": "bytes",
+    "LastModified": "2026-11-14T18:16:03+00:00",
+    "ContentLength": 34,
+    "ETag": "\"f120eb008eed1538dfe232923580c035\"",
+    "ChecksumCRC64NVME": "sx/2Al0V7Wk=",
+    "ChecksumType": "FULL_OBJECT",
+    "ContentType": "application/octet-stream",
+    "Metadata": {},
+    "StorageClass": "STANDARD"
+}
+Inspeção talhão 12: sem pragas
+== put-object (deve FALHAR com AccessDenied)
+
+aws: [ERROR]: An error occurred (AccessDenied) when calling the PutObject operation: User is not authorized to perform: s3:PutObject
+OK: put negado
+

@@ -1,0 +1,14 @@
+# ambiente local
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# estado do Floci e artefato gerado pelo implantar-etapa4.sh
+data/
+funcao.zip
+
+# credenciais nunca vão para o repositório
+.env
+*.pem
+credentials

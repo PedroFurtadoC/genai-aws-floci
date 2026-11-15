@@ -1,0 +1,3 @@
+$ .venv/Scripts/cfn-lint iac/vpc.yaml diario/05-template-gerado.yaml && echo "cfn-lint: 0 erros, 0 avisos"
+cfn-lint: 0 erros, 0 avisos
+

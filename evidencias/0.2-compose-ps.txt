@@ -1,0 +1,5 @@
+$ docker compose ps --format 'table {{.Service}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+SERVICE   IMAGE                  STATUS                   PORTS
+floci     floci/floci:latest     Up 3 minutes (healthy)   0.0.0.0:4566->4566/tcp, [::]:4566->4566/tcp
+ollama    ollama/ollama:latest   Up 3 minutes             0.0.0.0:11434->11434/tcp, [::]:11434->11434/tcp
+

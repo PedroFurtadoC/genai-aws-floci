@@ -1,0 +1,34 @@
+$ aws cloudformation deploy --template-file iac/vpc.yaml --stack-name lab-ia
+
+Waiting for changeset to be created..
+Waiting for stack create/update to complete
+Successfully created/updated stack - lab-ia
+
+$ aws cloudformation describe-stack-resources --stack-name lab-ia --query "StackResources[].[LogicalResourceId,ResourceType,ResourceStatus]" --output table
+-----------------------------------------------------------------------------------
+|                             DescribeStackResources                              |
++--------------------+-----------------------------------------+------------------+
+|  Vpc               |  AWS::EC2::VPC                          |  CREATE_COMPLETE |
+|  InternetGateway   |  AWS::EC2::InternetGateway              |  CREATE_COMPLETE |
+|  BucketRelatorios  |  AWS::S3::Bucket                        |  CREATE_COMPLETE |
+|  TabelaTriagem     |  AWS::DynamoDB::Table                   |  CREATE_COMPLETE |
+|  SgWeb             |  AWS::EC2::SecurityGroup                |  CREATE_COMPLETE |
+|  SubnetPrivada     |  AWS::EC2::Subnet                       |  CREATE_COMPLETE |
+|  RotaTabelaPublica |  AWS::EC2::RouteTable                   |  CREATE_COMPLETE |
+|  SubnetPublica     |  AWS::EC2::Subnet                       |  CREATE_COMPLETE |
+|  RotaTabelaPrivada |  AWS::EC2::RouteTable                   |  CREATE_COMPLETE |
+|  GatewayAttachment |  AWS::EC2::VPCGatewayAttachment         |  CREATE_COMPLETE |
+|  AssociacaoPublica |  AWS::EC2::SubnetRouteTableAssociation  |  CREATE_COMPLETE |
+|  AssociacaoPrivada |  AWS::EC2::SubnetRouteTableAssociation  |  CREATE_COMPLETE |
+|  RotaInternet      |  AWS::EC2::Route                        |  CREATE_COMPLETE |
+|  ServidorWeb       |  AWS::EC2::Instance                     |  CREATE_COMPLETE |
++--------------------+-----------------------------------------+------------------+
+
+$ aws ec2 describe-instances --filters Name=tag:Projeto,Values=genai-aws --query "Reservations[].Instances[].[InstanceId,InstanceType,ImageId,State.Name,MetadataOptions.HttpTokens]" --output table
+----------------------------------------------------------------------------------------------------------------------------------------
+|                                                           DescribeInstances                                                          |
++---------------------+-----------+-------------------------------------------------------------------------+-------------+------------+
+|  i-8f3de00f6c9caf5e0|  t3.micro |  /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64  |  terminated |  required  |
+|  i-cbe20e5b4db249dad|  t3.micro |  /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64  |  running    |  required  |
++---------------------+-----------+-------------------------------------------------------------------------+-------------+------------+
+

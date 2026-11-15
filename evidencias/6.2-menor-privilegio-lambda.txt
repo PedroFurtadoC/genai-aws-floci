@@ -1,0 +1,37 @@
+$ aws iam put-role-policy --role-name triagem-lambda --policy-name triagem-minimo --policy-document file://testes/politica-lambda-sem-putitem.json && echo "role sem dynamodb:PutItem"
+role sem dynamodb:PutItem
+
+$ printf "Inspeção talhão 6, cana. Sem anomalias.\n" | aws s3 cp - s3://relatorios-campo/r6-sem-putitem.txt && echo "upload r6-sem-putitem.txt"
+upload r6-sem-putitem.txt
+
+$ aws logs tail /aws/lambda/triagem --since 1m --format short | grep -o "^[0-9T:-]* \[ERROR\] ClientError: .*dynamodb:PutItem"
+2026-11-14T18:23:59 [ERROR] ClientError: An error occurred (AccessDeniedException) when calling the PutItem operation: User is not authorized to perform: dynamodb:PutItem
+2026-11-14T18:24:07 [ERROR] ClientError: An error occurred (AccessDeniedException) when calling the PutItem operation: User is not authorized to perform: dynamodb:PutItem
+
+$ aws dynamodb get-item --table-name triagem --key "{\"arquivo\":{\"S\":\"r6-sem-putitem.txt\"}}" --query Item.arquivo.S --output text
+None
+
+$ aws iam put-role-policy --role-name triagem-lambda --policy-name triagem-minimo --policy-document file://iam/politica-lambda-triagem.json && echo "política mínima restaurada (4 permissões)"
+política mínima restaurada (4 permissões)
+
+$ printf "Inspeção talhão 8, cana. Sem anomalias.\n" | aws s3 cp - s3://relatorios-campo/r7-restaurado.txt && echo "upload r7-restaurado.txt"
+upload r7-restaurado.txt
+
+$ aws dynamodb get-item --table-name triagem --key "{\"arquivo\":{\"S\":\"r7-restaurado.txt\"}}" --query "Item.[arquivo.S,urgencia.S]" --output text
+None
+
+$ aws dynamodb get-item --table-name triagem --key "{\"arquivo\":{\"S\":\"r7-restaurado.txt\"}}" --query "Item.[arquivo.S,urgencia.S,latencia_ms.N]" --output text
+r7-restaurado.txt	baixa	1829
+
+$ aws dynamodb scan --table-name triagem --query "sort_by(Items,&arquivo.S)[].[arquivo.S,urgencia.S,tokens_in.N,tokens_out.N,latencia_ms.N]" --output table
+-------------------------------------------------------
+|                        Scan                         |
++---------------------+--------+------+-----+---------+
+|  r1-baixa.txt       |  baixa |  227 |  29 |  41706  |
+|  r2-media.txt       |  media |  238 |  51 |  49105  |
+|  r3-alta.txt        |  alta  |  248 |  47 |  35522  |
+|  r4-injecao.txt     |  alta  |  219 |  34 |  26944  |
+|  r6-sem-putitem.txt |  baixa |  189 |  18 |  2565   |
+|  r7-restaurado.txt  |  baixa |  189 |  18 |  1829   |
++---------------------+--------+------+-----+---------+
+

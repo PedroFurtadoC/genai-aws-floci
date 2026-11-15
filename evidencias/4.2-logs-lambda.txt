@@ -1,0 +1,6 @@
+$ aws logs tail /aws/lambda/triagem --since 30m --format short
+2026-11-14T18:21:47 {"arquivo": "r4-injecao.txt", "urgencia": "alta", "revisao_humana": true, "latencia_ms": 26944}
+2026-11-14T18:21:55 {"arquivo": "r3-alta.txt", "urgencia": "alta", "revisao_humana": false, "latencia_ms": 35522}
+2026-11-14T18:22:01 {"arquivo": "r1-baixa.txt", "urgencia": "baixa", "revisao_humana": false, "latencia_ms": 41706}
+2026-11-14T18:22:09 {"arquivo": "r2-media.txt", "urgencia": "media", "revisao_humana": false, "latencia_ms": 49105}
+

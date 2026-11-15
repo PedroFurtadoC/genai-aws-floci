@@ -1,0 +1,120 @@
+$ bash scripts/implantar-etapa4.sh
+make_bucket: relatorios-campo
+{
+    "TableDescription": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "arquivo",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "triagem",
+        "KeySchema": [
+            {
+                "AttributeName": "arquivo",
+                "KeyType": "HASH"
+            }
+        ],
+        "TableStatus": "ACTIVE",
+        "CreationDateTime": "2026-11-14T15:20:35.826000-03:00",
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 0,
+            "WriteCapacityUnits": 0
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:us-east-1:000000000000:table/triagem",
+        "TableId": "341f3208-54e5-4a27-adb6-5c913e1e1efd",
+        "BillingModeSummary": {
+            "BillingMode": "PAY_PER_REQUEST",
+            "LastUpdateToPayPerRequestDateTime": "2026-11-14T15:20:35.826000-03:00"
+        },
+        "TableClassSummary": {
+            "TableClass": "STANDARD"
+        },
+        "DeletionProtectionEnabled": false,
+        "WarmThroughput": {
+            "ReadUnitsPerSecond": 0,
+            "WriteUnitsPerSecond": 0,
+            "Status": "ACTIVE"
+        }
+    }
+}
+{
+    "Role": {
+        "Path": "/",
+        "RoleName": "triagem-lambda",
+        "RoleId": "AROAQXX6EAE0VE0BU783",
+        "Arn": "arn:aws:iam::000000000000:role/triagem-lambda",
+        "CreateDate": "2026-11-14T18:20:38.004000+00:00",
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        },
+        "MaxSessionDuration": 3600
+    }
+}
+{
+    "FunctionName": "triagem",
+    "FunctionArn": "arn:aws:lambda:us-east-1:000000000000:function:triagem",
+    "Runtime": "python3.12",
+    "Role": "arn:aws:iam::000000000000:role/triagem-lambda",
+    "Handler": "app.handler",
+    "CodeSize": 2946,
+    "Timeout": 120,
+    "MemorySize": 256,
+    "LastModified": "2026-11-14T18:20:42.683+0000",
+    "CodeSha256": "wBreQCX57IiBzRPMw/PC9J3cQ4lzxrNxj2xP8pm0EKc=",
+    "Version": "$LATEST",
+    "Environment": {
+        "Variables": {
+            "TABELA": "triagem"
+        }
+    },
+    "TracingConfig": {
+        "Mode": "PassThrough"
+    },
+    "RevisionId": "da68d0cf-00c6-4c48-96da-6d22f1a667ef",
+    "State": "Active",
+    "LastUpdateStatus": "Successful",
+    "PackageType": "Zip",
+    "Architectures": [
+        "x86_64"
+    ],
+    "EphemeralStorage": {
+        "Size": 512
+    },
+    "SnapStart": {
+        "ApplyOn": "None",
+        "OptimizationStatus": "Off"
+    },
+    "RuntimeVersionConfig": {
+        "RuntimeVersionArn": "arn:aws:lambda:us-east-1::runtime:42f2b28d8258c41a63374ac4365007738900f66a9b62a7eb1a2041a2e091d41b"
+    },
+    "LoggingConfig": {
+        "LogFormat": "Text",
+        "LogGroup": "/aws/lambda/triagem"
+    }
+}
+{
+    "Statement": "{\"Sid\":\"s3-invoke\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:us-east-1:000000000000:function:triagem\",\"Condition\":{\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:s3:::relatorios-campo\"}}}"
+}
+Completed 162 Bytes/162 Bytes (1.2 KiB/s) with 1 file(s) remainingupload: relatorios\r1-baixa.txt to s3://relatorios-campo/r1-baixa.txt
+Completed 204 Bytes/204 Bytes (2.0 KiB/s) with 1 file(s) remainingupload: relatorios\r2-media.txt to s3://relatorios-campo/r2-media.txt
+Completed 239 Bytes/239 Bytes (1.0 KiB/s) with 1 file(s) remainingupload: relatorios\r3-alta.txt to s3://relatorios-campo/r3-alta.txt
+Aguarde a 1ª invocação (baixa a imagem do runtime) e rode:
+  aws dynamodb scan --table-name triagem --output table
+  aws logs tail /aws/lambda/triagem --follow
+
+$ aws s3 cp testes/r4-injecao.txt s3://relatorios-campo/ --only-show-errors && echo "upload: testes/r4-injecao.txt"
+upload: testes/r4-injecao.txt
+

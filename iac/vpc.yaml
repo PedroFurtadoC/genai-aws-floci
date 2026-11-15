@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Lab 2 por IaC (AG822): VPC com sub-rede publica e privada, servidor web EC2 so com HTTP,
+  bucket S3 e tabela DynamoDB da Etapa 4.
+
+Parameters:
+  Projeto:
+    Type: String
+    Default: genai-aws
+  LatestAmiId:
+    Description: AMI resolvida pelo parametro publico do SSM (nunca um ID fixo).
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+  NomeBucket:
+    Description: Na AWS real, nomes de bucket sao globais; acrescente um sufixo unico.
+    Type: String
+    Default: relatorios-campo
+  NomeTabela:
+    Type: String
+    Default: triagem
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - { Key: Name, Value: !Sub "${Projeto}-vpc" }
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  SubnetPublica:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - { Key: Name, Value: !Sub "${Projeto}-publica" }
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  SubnetPrivada:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - { Key: Name, Value: !Sub "${Projeto}-privada" }
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  RotaTabelaPublica:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  RotaInternet:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref RotaTabelaPublica
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  AssociacaoPublica:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublica
+      RouteTableId: !Ref RotaTabelaPublica
+
+  # Sub-rede privada sem rota para a internet (sem NAT Gateway: evita custo fixo por hora).
+  RotaTabelaPrivada:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  AssociacaoPrivada:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivada
+      RouteTableId: !Ref RotaTabelaPrivada
+
+  SgWeb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Somente HTTP de entrada
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0, Description: HTTP publico }
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  ServidorWeb:
+    Type: AWS::EC2::Instance
+    DependsOn: RotaInternet # o UserData precisa de saida para a internet para instalar o Apache
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.micro
+      SubnetId: !Ref SubnetPublica
+      SecurityGroupIds: [!Ref SgWeb]
+      MetadataOptions:
+        HttpTokens: required # IMDSv2 obrigatorio
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          dnf install -y httpd
+          echo "Lab IA - AG822" > /var/www/html/index.html
+          systemctl enable --now httpd
+      Tags:
+        - { Key: Name, Value: !Sub "${Projeto}-web" }
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  BucketRelatorios:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref NomeBucket
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+  TabelaTriagem:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref NomeTabela
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: arquivo, AttributeType: S }
+      KeySchema:
+        - { AttributeName: arquivo, KeyType: HASH }
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - { Key: Projeto, Value: !Ref Projeto }
+
+Outputs:
+  IpPublicoWeb:
+    Value: !GetAtt ServidorWeb.PublicIp
+  UrlWeb:
+    Value: !Sub "http://${ServidorWeb.PublicDnsName}"
+  NomeBucket:
+    Value: !Ref BucketRelatorios
+  ArnTabela:
+    Value: !GetAtt TabelaTriagem.Arn
+  VpcId:
+    Value: !Ref Vpc

@@ -1,0 +1,36 @@
+$ aws cloudformation deploy --template-file diario/05-template-gerado.yaml --stack-name teste-template-ia
+
+Waiting for changeset to be created..
+Waiting for stack create/update to complete
+Successfully created/updated stack - teste-template-ia
+
+$ aws cloudformation describe-stacks --stack-name teste-template-ia --query "Stacks[0].[StackStatus,Outputs[].[OutputKey,OutputValue]]" --output json
+[
+    "CREATE_COMPLETE",
+    [
+        [
+            "ServerPublicIp",
+            "127.0.0.1"
+        ],
+        [
+            "ServerUrl",
+            "http://127.0.0.1"
+        ],
+        [
+            "BucketName",
+            "relatorios-campo-000000000000-us-east-1"
+        ],
+        [
+            "TableArn",
+            "arn:aws:dynamodb:us-east-1:000000000000:table/triagem"
+        ],
+        [
+            "VpcId",
+            "vpc-0b56cf97"
+        ]
+    ]
+]
+
+$ aws cloudformation delete-stack --stack-name teste-template-ia && aws cloudformation wait stack-delete-complete --stack-name teste-template-ia && echo "stack teste-template-ia apagada"
+stack teste-template-ia apagada
+
